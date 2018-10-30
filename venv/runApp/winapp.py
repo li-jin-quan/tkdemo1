@@ -4,128 +4,89 @@ import tkinter.messagebox
 from tkinter import ttk
 from tkinter import scrolledtext
 from time import time
-import urllib.parse
-import urllib.request
-import  threading
+import threading
 import mythread
-
+import urlwork
 import time
 from _datetime import datetime
 
+urlwork = urlwork.MyUrl()
+event_flag = threading.Event()
 
-class WinApp(object):
-    def __init__(self):
-        a = 1
-
-
-def getCurrentTime():
+def getCurrentTime():  # 获取系统当前时间
     return datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
 
 
-def loginbtn():
-    scr.insert(tk.INSERT,
-               getCurrentTime() + "\n" + "用户名:" + uname.get() + '\n' + "密码:" + pwd.get() + "\n" + "邀请码:" + inv.get() + "\n")
-    token = getToken()
+def insertScr(str):  # 在tab1中的scr中输出工作记录
+    scr.insert(tk.INSERT, "\n" + getCurrentTime() + " " + str)
+
+
+def loginbtn():  # tab登录按钮
+    insertScr("\n用户名:" + uname.get() + '\n密码:' + pwd.get() + "\n邀请码:" + inv.get())
+    token = urlwork.getToken(uname.get(), pwd.get())
     if (token != -2):
-        scr.insert(tk.INSERT, getCurrentTime() + " \n登录成功 token:" + token.decode("gbk"))
+        insertScr("登录成功")
         # tkinter.messagebox.showinfo(title="提示", message="登录成功")
     else:
-        scr.insert(tk.INSERT, getCurrentTime() + "登录失败" + token.decode("gbk"))
+        insertScr("登录失败")
         # tkinter.messagebox.showinfo(title="提示", message="登录失败")
-    return token
 
 
-def getResponse(url, data):
-    params = urllib.parse.urlencode(data)
-    url = url % params
-    with urllib.request.urlopen(url, timeout=100) as response:
-        return response.read()
-
-
-def getTelNum(token):
-    data = {
-        "token": token,
-        "xmid": 200,
-        "sl": 1,
-        "lx": 1,
-        "a1": "",
-        "a2": "",
-        "pk": "",
-        "ks": 0,
-        "rj": 0
-    }
-    url = 'http://47.106.71.60:9180/service.asmx/GetHM2Str?%s'
-    return getResponse(url, data)
-
-
-def getVerificationCode(token, telNumber):
-    url = "http://47.106.71.60:9180/service.asmx/GetYzm2Str?%s"
-    data = {
-        "token": token,
-        "hm": telNumber[3:13],
-        "xmid": 200,
-        "sf": 0
-    }
-    return getResponse(url, data)
-
-
-def getToken():
-    data = {
-        "name": uname.get(),
-        "psw": pwd.get()
-    }
-    url = "http://47.106.71.60:9180/service.asmx/UserLoginStr?%s"
-    return getResponse(url, data)
-
-
-def radiobuttonDo():
-    scr.insert(tk.INSERT, "\n" + " 你点击了radiobutton    " + var.get())
+def radiobuttonDo():  # tab1单选按钮
+    insertScr("你点击了radiobutton " + var.get())
     if (var.get() == "d"):
         scr.delete(1.0, tkinter.END)
 
 
 def doWork(msg):
-    scr.insert(tk.INSERT, "\n" + getCurrentTime() + msg)
+    insertScr(msg)
     stopbutton["background"] = "#F5F5F5"  # 白灰
     runbutton["background"] = "SpringGreen"  # 闪光绿
     # 1.获取token    if (loginbtn):
-    logintoken = getToken()
+    logintoken = urlwork.getToken(uname.get(), pwd.get())
     # 2.获取手机号
-    telNumber = getTelNum(logintoken)
-    scr.insert(tk.INSERT, "\n" + getCurrentTime() + " 手机号:" + telNumber[3:13].decode("gbk"))
-    # 3.获取验证码
+
     while 1:
-        verification_code = getVerificationCode(logintoken, telNumber)
-        if (verification_code.decode("gbk") != "-1"):
-            scr.insert(tk.INSERT, "\n" + getCurrentTime() + " 验证码:" + verification_code.decode("gbk"))
-            break
+        telNumber = urlwork.getTelNum(logintoken)
+        insertScr("手机号:" + telNumber[3:13].decode("gbk"))
+        # 3.获取验证码
+        verification_code = ""
+        for i in range(1):
+            verification_code = urlwork.getVerificationCode(logintoken, telNumber)
+            if (verification_code.decode("gbk") != "-1"):
+                insertScr("验证码:" + verification_code.decode("gbk"))
+                break
+            else:
+                insertScr("获取验证码失败  " + verification_code.decode("gbk"))
+                time.sleep(6)
+        # 4.释放手机号
+        n = urlwork.releaseNum(logintoken, telNumber[3:13])
+        if(n.decode("gbk")==1):
+            insertScr("号码释放成功")
         else:
-            scr.insert(tk.INSERT, "\n" + getCurrentTime() + " 获取验证码失败  " + verification_code.decode("gbk"))
-            time.sleep(6)
-
-    # 4.释放手机号
+            insertScr("号码释放失败")
 
 
+th = threading.Thread(target=doWork, args=("\n" + " 开始工作.....",))
 def runbtn():
-    runbutton["background"] = "#008000"  # 纯绿
+    event_flag.set()
+    runbutton["background"] = "#90EE90"  # 纯绿
     stopbutton["background"] = "#F5F5F5"  # 番茄红
-    th = threading.Thread(target=doWork, args=("\n" + " 开始工作.....",))
     th.setDaemon(True)  # 守护线程
     th.start()
     # th = mythread.Th(target=doWork, args=("\n" + " 开始工作.....",))
     # th.setDaemon(True)  # 守护线程
     # th.start()
 
-
 def stopbtn():
     runbutton["background"] = "#F5F5F5"  # 白灰
     stopbutton["background"] = "#FF6347"  # 番茄红
+    event_flag.clear()
 
 
 def checkEntry():
     if (uname.get().replace(" ", "") == ""):
         tkinter.messagebox.showwarning("警告", "用户名不能为空!")
-
 
 
 root = tk.Tk()
