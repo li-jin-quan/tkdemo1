@@ -9,9 +9,13 @@ import mythread
 import urlwork
 import time
 from _datetime import datetime
+import inspect
+import ctypes
 
 urlwork = urlwork.MyUrl()
 event_flag = threading.Event()
+
+th=None
 
 def getCurrentTime():  # 获取系统当前时间
     return datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
@@ -19,12 +23,13 @@ def getCurrentTime():  # 获取系统当前时间
 
 def insertScr(str):  # 在tab1中的scr中输出工作记录
     scr.insert(tk.INSERT, "\n" + getCurrentTime() + " " + str)
+    scr.see(tk.END)
 
 
 def loginbtn():  # tab登录按钮
     insertScr("\n用户名:" + uname.get() + '\n密码:' + pwd.get() + "\n邀请码:" + inv.get())
     token = urlwork.getToken(uname.get(), pwd.get())
-    if (token != -2):
+    if (token.decode("gbk") != "-2"):
         insertScr("登录成功")
         # tkinter.messagebox.showinfo(title="提示", message="登录成功")
     else:
@@ -38,55 +43,79 @@ def radiobuttonDo():  # tab1单选按钮
         scr.delete(1.0, tkinter.END)
 
 
+# 杀死线程
+def stopTh(tid, exctype):
+    """raises the exception, performs cleanup if needed"""
+    tid = ctypes.c_long(tid)
+    if not inspect.isclass(exctype):
+        exctype = type(exctype)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+    if res == 0:
+        raise ValueError("invalid thread id")
+    elif res != 1:
+        # """if it returns a number greater than one, you're in trouble,
+        # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
+    insertScr("程序已结束工作!")
+
+
 def doWork(msg):
     insertScr(msg)
-    stopbutton["background"] = "#F5F5F5"  # 白灰
-    runbutton["background"] = "SpringGreen"  # 闪光绿
     # 1.获取token    if (loginbtn):
     logintoken = urlwork.getToken(uname.get(), pwd.get())
     # 2.获取手机号
 
-    while 1:
+    while 100:
         telNumber = urlwork.getTelNum(logintoken)
         insertScr("手机号:" + telNumber[3:13].decode("gbk"))
         # 3.获取验证码
         verification_code = ""
-        for i in range(1):
+        for i in range(100):
             verification_code = urlwork.getVerificationCode(logintoken, telNumber)
             if (verification_code.decode("gbk") != "-1"):
                 insertScr("验证码:" + verification_code.decode("gbk"))
                 break
             else:
                 insertScr("获取验证码失败  " + verification_code.decode("gbk"))
-                time.sleep(6)
+                # time.sleep(6)
         # 4.释放手机号
         n = urlwork.releaseNum(logintoken, telNumber[3:13])
-        if(n.decode("gbk")==1):
+        if (n.decode("gbk") == "1"):
             insertScr("号码释放成功")
         else:
             insertScr("号码释放失败")
 
 
-th = threading.Thread(target=doWork, args=("\n" + " 开始工作.....",))
+def creatTh():
+    return threading.Thread(target=doWork, args=("\n" + " 开始工作.....",))
+
+
 def runbtn():
-    event_flag.set()
-    runbutton["background"] = "#90EE90"  # 纯绿
-    stopbutton["background"] = "#F5F5F5"  # 番茄红
-    th.setDaemon(True)  # 守护线程
-    th.start()
-    # th = mythread.Th(target=doWork, args=("\n" + " 开始工作.....",))
-    # th.setDaemon(True)  # 守护线程
-    # th.start()
+    for i in range(thtext.get()):
+        global th
+        th = creatTh()
+        # th.setDaemon(True)  # 守护线程
+        th.start()
+
 
 def stopbtn():
-    runbutton["background"] = "#F5F5F5"  # 白灰
-    stopbutton["background"] = "#FF6347"  # 番茄红
-    event_flag.clear()
+    global th
+    stopTh(th.ident, SystemExit)
 
 
 def checkEntry():
     if (uname.get().replace(" ", "") == ""):
         tkinter.messagebox.showwarning("警告", "用户名不能为空!")
+
+
+def checkThEntry(content):
+    def test(content):
+        # 如果不加上==""的话，就会发现删不完。总会剩下一个数字
+        if content.isdigit() or content == "":
+            return True
+        else:
+            return False
 
 
 root = tk.Tk()
@@ -103,6 +132,7 @@ tabControl.add(tab3, text=" 账  号 ")
 tabControl.grid(padx=4, pady=4)
 
 style = ttk.Style()
+test_cmd = root.register(checkThEntry)
 
 style.configure("BW.TLabel", foreground="#32CD32", background="white")
 
@@ -118,7 +148,9 @@ radiobutton2 = ttk.Radiobutton(label_frame_loging, text="众码", variable=var, va
 user_name = ttk.Label(label_frame_loging, text="用户名:")
 password = ttk.Label(label_frame_loging, text="密码:")
 Invite_code = ttk.Label(label_frame_loging, text="邀请码:")
+thlabel = ttk.Label(label_frame_loging, text="线程数:")
 loginbtn = tk.Button(label_frame_loging, text="登录", command=loginbtn)
+
 runbutton = tk.Button(tab1, text="运行", command=runbtn, width=10)
 stopbutton = tk.Button(tab1, text="停止", command=stopbtn, width=10)
 scr = scrolledtext.ScrolledText(label_frame_log, width=50)
@@ -129,6 +161,8 @@ pwd = tk.StringVar()
 pwd_text = ttk.Entry(label_frame_loging, textvariable=pwd)
 inv = tk.StringVar()
 inv_text = ttk.Entry(label_frame_loging, textvariable=inv)
+thtext = tk.IntVar()
+th_text = ttk.Entry(label_frame_loging, textvariable=thtext, validate='key', validatecommand=(test_cmd, '%P'))
 radiobutton1.grid(row=0, column=0)
 radiobutton2.grid(row=0, column=1)
 user_name.grid(row=1)
@@ -137,7 +171,10 @@ password.grid(row=2, padx=2, pady=3)
 pwd_text.grid(row=2, column=1, padx=2, pady=3)
 Invite_code.grid(row=3, padx=2, pady=3)
 inv_text.grid(row=3, column=1, padx=2, pady=3)
-loginbtn.grid(row=4, ipadx=20)
+thlabel.grid(row=4, column=0)
+th_text.grid(row=4, column=1)
+
+loginbtn.grid(row=5, ipadx=20)
 
 runbutton.grid(row=0, column=1, padx=5, sticky=tk.S)
 stopbutton.grid(row=0, column=1, padx=5, sticky=tk.S + tk.E)

@@ -41,6 +41,7 @@ class MyUrl(object):
     # 获取验证码
     def getVerificationCode(self, token, telNumber):
         url = "http://47.106.71.60:9180/service.asmx/GetYzm2Str?%s"
+
         data = {
             "token": token,
             "hm": telNumber[3:13],
@@ -51,7 +52,7 @@ class MyUrl(object):
 
     #释放号码
     def releaseNum(self,token,num):
-        url = "http://47.106.7160:9180/service.asmx/sfHmStr?%s"
+        url = "http://47.106.71.60:9180/service.asmx/sfHmStr?%s"
         data = {
             "token": token,
             "hm":num
