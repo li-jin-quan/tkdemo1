@@ -11,11 +11,14 @@ import time
 from _datetime import datetime
 import inspect
 import ctypes
+from concurrent.futures import ThreadPoolExecutor
+import time
 
 urlwork = urlwork.MyUrl()
 event_flag = threading.Event()
 
-th=None
+th = None
+thList=[]
 
 def getCurrentTime():  # 获取系统当前时间
     return datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
@@ -30,7 +33,16 @@ def loginbtn():  # tab登录按钮
     insertScr("\n用户名:" + uname.get() + '\n密码:' + pwd.get() + "\n邀请码:" + inv.get())
     token = urlwork.getToken(uname.get(), pwd.get())
     if (token.decode("gbk") != "-2"):
+        try:
+            with open("account") as fp:
+                tkinter.messagebox.showinfo(title='恭喜', message='登录成功！')
+                # 把登录成功的信息写入临时文件
+                with open(filename, 'w') as fp:
+                    fp.write(','.join((uname.get(),pwd.get())))
+        except:
+            pass
         insertScr("登录成功")
+
         # tkinter.messagebox.showinfo(title="提示", message="登录成功")
     else:
         insertScr("登录失败")
@@ -66,7 +78,7 @@ def doWork(msg):
     logintoken = urlwork.getToken(uname.get(), pwd.get())
     # 2.获取手机号
 
-    while 100:
+    while 3:
         telNumber = urlwork.getTelNum(logintoken)
         insertScr("手机号:" + telNumber[3:13].decode("gbk"))
         # 3.获取验证码
@@ -78,13 +90,13 @@ def doWork(msg):
                 break
             else:
                 insertScr("获取验证码失败  " + verification_code.decode("gbk"))
-                # time.sleep(6)
-        # 4.释放手机号
-        n = urlwork.releaseNum(logintoken, telNumber[3:13])
-        if (n.decode("gbk") == "1"):
-            insertScr("号码释放成功")
-        else:
-            insertScr("号码释放失败")
+                time.sleep(6)
+    # 4.释放手机号
+    n = urlwork.releaseNum(logintoken, telNumber[3:13])
+    if (n.decode("gbk") == "1"):
+        insertScr("号码释放成功")
+    else:
+        insertScr("号码释放失败")
 
 
 def creatTh():
@@ -101,6 +113,7 @@ def runbtn():
 
 def stopbtn():
     global th
+
     stopTh(th.ident, SystemExit)
 
 
@@ -115,6 +128,7 @@ def checkThEntry(content):
         if content.isdigit() or content == "":
             return True
         else:
+            tkinter.messagebox.showwarning("警告", "线程必须是数字!")
             return False
 
 
@@ -132,8 +146,8 @@ tabControl.add(tab3, text=" 账  号 ")
 tabControl.grid(padx=4, pady=4)
 
 style = ttk.Style()
-test_cmd = root.register(checkThEntry)
-
+thentrycheck = root.register(checkThEntry)
+nameandpwdentrycheck = root.register(checkEntry)
 style.configure("BW.TLabel", foreground="#32CD32", background="white")
 
 var = tk.StringVar()
@@ -156,13 +170,15 @@ stopbutton = tk.Button(tab1, text="停止", command=stopbtn, width=10)
 scr = scrolledtext.ScrolledText(label_frame_log, width=50)
 scr.grid(row=0, column=0, pady=0)
 uname = tk.StringVar()
-uname_text = ttk.Entry(label_frame_loging, textvariable=uname, validate='focusout', validatecommand=checkEntry)
+uname_text = ttk.Entry(label_frame_loging, textvariable=uname, validate='focusout',
+                       validatecommand=(nameandpwdentrycheck, '%P'))
 pwd = tk.StringVar()
-pwd_text = ttk.Entry(label_frame_loging, textvariable=pwd)
+pwd_text = ttk.Entry(label_frame_loging, textvariable=pwd, validatecommand=(nameandpwdentrycheck, '%P'))
 inv = tk.StringVar()
 inv_text = ttk.Entry(label_frame_loging, textvariable=inv)
 thtext = tk.IntVar()
-th_text = ttk.Entry(label_frame_loging, textvariable=thtext, validate='key', validatecommand=(test_cmd, '%P'))
+thtext.set(1)
+th_text = ttk.Entry(label_frame_loging, textvariable=thtext, validate='key', validatecommand=(thentrycheck, '%P'))
 radiobutton1.grid(row=0, column=0)
 radiobutton2.grid(row=0, column=1)
 user_name.grid(row=1)
@@ -178,5 +194,11 @@ loginbtn.grid(row=5, ipadx=20)
 
 runbutton.grid(row=0, column=1, padx=5, sticky=tk.S)
 stopbutton.grid(row=0, column=1, padx=5, sticky=tk.S + tk.E)
-
+try:
+    with open("account") as fp:
+        n, p = fp.read().strip().split(',')
+        uname.set(n)
+        pwd.set(p)
+except:
+    pass
 root.mainloop()
