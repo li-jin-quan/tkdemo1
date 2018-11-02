@@ -1,7 +1,7 @@
 import urllib.parse
 import urllib.request
 
-
+baseUrl="http://47.106.71.60:9180/service.asmx/"
 class MyUrl(object):
     def __init__(self):
         self.url = ""
@@ -19,7 +19,7 @@ class MyUrl(object):
             "name": uname,
             "psw": pwd
         }
-        url = "http://47.106.71.60:9180/service.asmx/UserLoginStr?%s"
+        url = baseUrl+"UserLoginStr?%s"
         return self.getResponse(url, data)
 
     # 获取手机号
@@ -35,12 +35,12 @@ class MyUrl(object):
             "ks": 0,
             "rj": 0
         }
-        url = 'http://47.106.71.60:9180/service.asmx/GetHM2Str?%s'
+        url = baseUrl+"GetHM2Str?%s"
         return self.getResponse(url, data)
 
     # 获取验证码
     def getVerificationCode(self, token, telNumber):
-        url = "http://47.106.71.60:9180/service.asmx/GetYzm2Str?%s"
+        url = baseUrl+"GetYzm2Str?%s"
 
         data = {
             "token": token,
@@ -52,7 +52,7 @@ class MyUrl(object):
 
     #释放号码
     def releaseNum(self,token,num):
-        url = "http://47.106.71.60:9180/service.asmx/sfHmStr?%s"
+        url = baseUrl+"sfHmStr?%s"
         data = {
             "token": token,
             "hm":num
