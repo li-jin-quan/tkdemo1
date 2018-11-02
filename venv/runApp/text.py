@@ -1,28 +1,12 @@
-from concurrent.futures import ThreadPoolExecutor
 import time
-
-
-def sayhello():
-    print("say hello!!!")
-
-
-def main():
-    seed = ["a", "b", "c"]
-    start1 = time.time()
-
-    end1 = time.time()
-    print("time1: " + str(end1 - start1))
-    start2 = time.time()
-    with ThreadPoolExecutor(3) as executor:
-        executor.submit(sayhello)
-    end2 = time.time()
-    print("time2: " + str(end2 - start2))
-    start3 = time.time()
-    with ThreadPoolExecutor(3) as executor1:
-        executor1.map(sayhello, seed)
-    end3 = time.time()
-    print("time3: " + str(end3 - start3))
-
-
-if __name__ == '__main__':
-    main()
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, Executor
+def sayHello(a):
+    print("say hello:"+a)
+start = time.time()
+with ProcessPoolExecutor(max_workers=2) as pool:
+    results = list(pool.map(sayHello, "1"))
+print
+'results: %s' % results
+end = time.time()
+print
+'Took %.3f seconds.' % (end - start)

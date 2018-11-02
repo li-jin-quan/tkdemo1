@@ -11,15 +11,10 @@ import time
 from _datetime import datetime
 import inspect
 import ctypes
-from concurrent.futures import ThreadPoolExecutor
-import time
+from threading import Thread
 
 urlwork = urlwork.MyUrl()
 event_flag = threading.Event()
-
-th = None
-thList=[]
-
 def getCurrentTime():  # 获取系统当前时间
     return datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
 
@@ -38,7 +33,7 @@ def loginbtn():  # tab登录按钮
                 tkinter.messagebox.showinfo(title='恭喜', message='登录成功！')
                 # 把登录成功的信息写入临时文件
                 with open(filename, 'w') as fp:
-                    fp.write(','.join((uname.get(),pwd.get())))
+                    fp.write(','.join((uname.get(), pwd.get())))
         except:
             pass
         insertScr("登录成功")
@@ -56,7 +51,7 @@ def radiobuttonDo():  # tab1单选按钮
 
 
 # 杀死线程
-def stopTh(tid, exctype):
+def stopTh(tid,msg, exctype):
     """raises the exception, performs cleanup if needed"""
     tid = ctypes.c_long(tid)
     if not inspect.isclass(exctype):
@@ -69,52 +64,54 @@ def stopTh(tid, exctype):
         # and you should call it again with exc=NULL to revert the effect"""
         ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
         raise SystemError("PyThreadState_SetAsyncExc failed")
-    insertScr("程序已结束工作!")
+    insertScr(msg+"已结束工作!")
 
 
 def doWork(msg):
-    insertScr(msg)
     # 1.获取token    if (loginbtn):
     logintoken = urlwork.getToken(uname.get(), pwd.get())
     # 2.获取手机号
 
     while 3:
         telNumber = urlwork.getTelNum(logintoken)
-        insertScr("手机号:" + telNumber[3:13].decode("gbk"))
+        insertScr(msg+"手机号:" + telNumber[3:13].decode("gbk"))
         # 3.获取验证码
         verification_code = ""
         for i in range(100):
             verification_code = urlwork.getVerificationCode(logintoken, telNumber)
             if (verification_code.decode("gbk") != "-1"):
-                insertScr("验证码:" + verification_code.decode("gbk"))
+                insertScr(msg+"验证码:" + verification_code.decode("gbk"))
                 break
             else:
-                insertScr("获取验证码失败  " + verification_code.decode("gbk"))
+                insertScr(msg+"获取验证码失败  " + verification_code.decode("gbk"))
                 time.sleep(6)
     # 4.释放手机号
     n = urlwork.releaseNum(logintoken, telNumber[3:13])
     if (n.decode("gbk") == "1"):
-        insertScr("号码释放成功")
+        insertScr(msg+"号码释放成功")
     else:
-        insertScr("号码释放失败")
+        insertScr(msg+"号码释放失败")
 
 
-def creatTh():
-    return threading.Thread(target=doWork, args=("\n" + " 开始工作.....",))
+def creatTh(maxNum):
+    global thList
+    thList=[]
+    for i in range(maxNum):
+        i = threading.Thread(target=doWork,name=str(i), args=("[程序"+str(i)+"]",))
+        thList.append(i)
+    return thList
 
 
 def runbtn():
-    for i in range(thtext.get()):
-        global th
-        th = creatTh()
-        # th.setDaemon(True)  # 守护线程
-        th.start()
+    th = creatTh(thtext.get())
+    for t in th:
+        #t.setDaemon(True)
+        t.start()
 
 
 def stopbtn():
-    global th
-
-    stopTh(th.ident, SystemExit)
+    for th in thList:
+        stopTh(th.ident,"[程序"+th.getName()+"]", SystemExit)
 
 
 def checkEntry():
