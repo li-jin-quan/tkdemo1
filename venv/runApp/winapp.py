@@ -79,7 +79,7 @@ def stopTh(tid, msg, exctype):
 
 def doWork(msg):
     insertScr(msg + "is running...")
-    currentIp_var.set("192.168.0.0")
+
     while 3:
         # 1.获取token    if (loginbtn):
         if massageToken is None:
@@ -87,6 +87,7 @@ def doWork(msg):
             break
         else:
             logintoken = massageToken
+            currentIp_var.set("192.168.0.0")
         # 2.获取手机号
 
         telNumber = urlwork.getTelNum(logintoken)
