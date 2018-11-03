@@ -12,13 +12,15 @@ from _datetime import datetime
 import inspect
 import ctypes
 from threading import Thread
-import  mytable
-mytab=mytable.Mytable()
+import mytable
+
+mytab = mytable.Mytable()
 urlwork = urlwork.MyUrl()
 event_flag = threading.Event()
 
 thList = []
-massageToken=None
+massageToken = None
+
 
 def getCurrentTime():  # 获取系统当前时间
     return datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
@@ -30,13 +32,13 @@ def insertScr(str):  # 在tab1中的scr中输出工作记录
 
 
 def loginbtn():  # tab登录按钮
-    insertScr("\n用户名:" + uname.get() + '\n密码:' + pwd.get() + "\n邀请码:" + inv.get())
-    global  massageToken
+    insertScr("\n用户名:" + uname.get() + '\n密码:' + pwd.get())
+    global massageToken
     massageToken = urlwork.getToken(uname.get(), pwd.get())
     if (massageToken.decode("gbk") != "-2"):
         try:
             with open("account") as fp:
-                #tkinter.messagebox.showinfo(title='恭喜', message='登录成功！')
+                # tkinter.messagebox.showinfo(title='恭喜', message='登录成功！')
                 # 把登录成功的信息写入临时文件
                 with open(filename, 'w') as fp:
                     fp.write(','.join((uname.get(), pwd.get())))
@@ -47,7 +49,7 @@ def loginbtn():  # tab登录按钮
         # tkinter.messagebox.showinfo(title="提示", message="登录成功")
     else:
         insertScr("登录失败")
-        massageToken=None
+        massageToken = None
         # tkinter.messagebox.showinfo(title="提示", message="登录失败")
 
 
@@ -56,7 +58,8 @@ def radiobuttonDo():  # tab1单选按钮
     if (var.get() == "d"):
         scr.delete(1.0, tkinter.END)
 
-
+def clearRunninglogButton():
+    scr.delete(1.0, tkinter.END)
 # 杀死线程
 def stopTh(tid, msg, exctype):
     """raises the exception, performs cleanup if needed"""
@@ -75,13 +78,15 @@ def stopTh(tid, msg, exctype):
 
 
 def doWork(msg):
-    insertScr(msg+"is running...")
+    insertScr(msg + "is running...")
+    currentIp_var.set("192.168.0.0")
     while 3:
         # 1.获取token    if (loginbtn):
         if massageToken is None:
-            tkinter.messagebox.showinfo(title='提示', message='请登录！')
+            tkinter.messagebox.showinfo(title='提示', message='请登录短信接码平台！')
+            break
         else:
-            logintoken=massageToken
+            logintoken = massageToken
         # 2.获取手机号
 
         telNumber = urlwork.getTelNum(logintoken)
@@ -102,11 +107,12 @@ def doWork(msg):
             insertScr(msg + "号码释放成功")
         else:
             insertScr(msg + "号码释放失败")
-        tree.insert("", "end", values=(i + 1,telNumber[3:13],"123456789","OK","-"))
+        tree.insert("", "end", values=(i + 1, telNumber[3:13], "123456789", "OK", "-"))
+
 
 def creatTh(maxNum):
     global thList
-    thList=[]
+    thList = []
     for i in range(maxNum):
         i = threading.Thread(target=doWork, name=str(i), args=("[程序" + str(i) + "]",))
         thList.append(i)
@@ -114,7 +120,7 @@ def creatTh(maxNum):
 
 
 def runbtn():
-    th = creatTh(thtext.get())
+    th = creatTh(thread_count_var.get())
     for t in th:
         # t.setDaemon(True)
         t.start()
@@ -124,11 +130,15 @@ def stopbtn():
     for th in thList:
         stopTh(th.ident, "[程序" + th.getName() + "]", SystemExit)
 
+
 def testbtn():
     insertScr("测试成功!!")
 
+
 def dailbtn():
     insertScr("拨号测试成功!")
+
+
 def checkEntry():
     if (uname.get().replace(" ", "") == ""):
         tkinter.messagebox.showwarning("警告", "用户名不能为空!")
@@ -157,7 +167,7 @@ tabControl.add(tab1, text=" 工作台 ")
 tabControl.add(tab2, text=" 账  号 ")
 tabControl.add(tab3, text=" 设  置 ")
 tabControl.grid(padx=4, pady=4)
-#-------------------------------------------------------tab1---------------------------------------------------------
+# -------------------------------------------------------tab1---------------------------------------------------------
 style = ttk.Style()
 thentrycheck = root.register(checkThEntry)
 nameandpwdentrycheck = root.register(checkEntry)
@@ -165,135 +175,139 @@ style.configure("BW.TLabel", foreground="#32CD32", background="white")
 
 var = tk.StringVar()
 
-label_frame_log = ttk.LabelFrame(tab1, text="运行记录", width=400, height=400)
-controlled_center_frame = ttk.LabelFrame(tab1, text="控制中心", width=400, height=280)
-controlled_center_bottom_frame = ttk.LabelFrame(controlled_center_frame, text="操作区", width=390, height=300)
-controller_center_head_frame = ttk.LabelFrame(controlled_center_frame, text="短信", width=390, height=300)
-controller_center_center_frame = ttk.LabelFrame(controlled_center_frame, text="换IP", width=390, height=300)
-controller_center_center_inside_frame = ttk.LabelFrame(controller_center_center_frame, text="优质代理", width=390, height=300)
-dial_frame = ttk.LabelFrame(controller_center_center_frame, text="拨号", width=390, height=300)
+runninglog_lableframe = ttk.LabelFrame(tab1, text="运行记录", width=400, height=300)
+scr = scrolledtext.ScrolledText(runninglog_lableframe, width=50, height=37)
+currentIpLab=ttk.Label(runninglog_lableframe,text="        当前IP:")
+currentIp_var=tk.StringVar()
+currentIp_text=ttk.Entry(runninglog_lableframe,textvariable=currentIp_var,width=30)
+scr.grid(row=0, pady=0)
+currentIpLab.grid(row=1,sticky=tk.S+tk.W)
+currentIp_text.grid(row=1,sticky=tk.S)
 
-controller_center_head_frame.grid(row=0, padx=5, sticky=tk.N + tk.W + tk.E)
-controlled_center_frame.grid(row=0, column=1, padx=5, sticky=tk.N)
-label_frame_log.grid(row=0, column=0, padx=5, sticky=tk.N + tk.S)
-controlled_center_bottom_frame.grid(row=2, padx=5)
-controller_center_center_frame.grid(row=1,padx=5)
-controller_center_center_inside_frame.grid(row=1,column=0)
-dial_frame.grid(row=1,column=1)
-radiobutton1 = ttk.Radiobutton(controller_center_head_frame, text="讯码", variable=var, value="a", command=radiobuttonDo)
-radiobutton2 = ttk.Radiobutton(controller_center_head_frame, text="众码", variable=var, value="b", command=radiobuttonDo)
-radiobutton3 = ttk.Radiobutton(controller_center_head_frame, text="快码", variable=var, value="c", command=radiobuttonDo)
-# radiobutton4 = ttk.Radiobutton(controller_center_head_frame , text="神话", variable=var, value="c", command=radiobuttonDo)
-radiobutton5 = ttk.Radiobutton(controller_center_center_frame , text="拨号", variable=var, value="d", command=radiobuttonDo)
-radiobutton6 = ttk.Radiobutton(controller_center_center_frame , text="讯代理", variable=var, value="e", command=radiobuttonDo)
-#radiobutton7 = ttk.Radiobutton(controller_center_center_frame , text="不换ip", variable=var, value="f", command=radiobuttonDo)
-user_name = ttk.Label(controller_center_head_frame, text="用户名:")
-password = ttk.Label(controller_center_head_frame, text="密   码:")
-Invite_code = ttk.Label(controlled_center_bottom_frame, text="邀请码:")
-loginbtn = tk.Button(controller_center_head_frame, text="登录", command=loginbtn)
 
-thlabel = ttk.Label(controlled_center_bottom_frame, text="线程数:")
-ctrlabel = ttk.Label(controlled_center_bottom_frame, text="操作数:")
-
-diallabel = ttk.Label(controlled_center_bottom_frame, text="拨号延迟:")
-randomPWDcheck= ttk.Checkbutton(controlled_center_bottom_frame, text="随机密码")
-fixedpwdlab = ttk.Label(controlled_center_bottom_frame, text="固定密码:")
-spiderIdlab = ttk.Label(controller_center_center_inside_frame, text="spiderId:")
-orderlab = ttk.Label(controller_center_center_inside_frame, text="订单号:")
-iplabel = ttk.Label(controller_center_center_inside_frame, text="使用次数:")
-BWaccountlabel = ttk.Label(dial_frame, text="宽带账号:")
-BWpwdlabel = ttk.Label(dial_frame, text="宽带密码:")
-filterIPcheck= ttk.Checkbutton(dial_frame, text="过滤相同IP")
-runbutton = tk.Button(controlled_center_bottom_frame, text="运行", command=runbtn, width=10)
-stopbutton = tk.Button(controlled_center_bottom_frame, text="停止", command=stopbtn, width=10)
-testbutton = tk.Button(controller_center_center_inside_frame, text="测试", command=testbtn, width=10)
-dialbutton = tk.Button(dial_frame, text="拨号测试", command=dailbtn, width=10)
-scr = scrolledtext.ScrolledText(label_frame_log, width=50,height=50)
-scr.grid(row=0, column=0, pady=0)
-uname = tk.StringVar()
-uname_text = ttk.Entry(controller_center_head_frame, textvariable=uname, validate='focusout',
-                       validatecommand=(nameandpwdentrycheck, '%P'))
-pwd = tk.StringVar()
-pwd_text = ttk.Entry(controller_center_head_frame, textvariable=pwd, validatecommand=(nameandpwdentrycheck, '%P'))
-inv = tk.StringVar()
-inv_text = ttk.Entry(controlled_center_bottom_frame,width=10, textvariable=inv)
-thtext = tk.IntVar()
-thtext.set(1)
-th_text = ttk.Entry(controlled_center_bottom_frame,width=10, textvariable=thtext, validate='key',
-                    validatecommand=(thentrycheck, '%P'))
-ctrtext = tk.IntVar()
-ctrtext.set(1)
-ctr_text = ttk.Entry(controlled_center_bottom_frame,width=10, textvariable=ctrtext, validate='key',
-                     validatecommand=(thentrycheck, '%P'))
-
-ip_comboxlisttext=tkinter.StringVar()#窗体自带的文本，新建一个值
-ip_comboxlist_text = ttk.Combobox(controller_center_center_inside_frame,width=10, textvariable=ip_comboxlisttext, validate='key',
-                     validatecommand=(thentrycheck, '%P'))
-ip_comboxlist_text["values"]=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-dialtext = tk.IntVar()
-dialtext.set(1)
-dial_text = ttk.Entry(controlled_center_bottom_frame,width=10, textvariable=dialtext, validate='key',
-                     validatecommand=(thentrycheck, '%P'))
-fixedpwd = tk.IntVar()
-fixedpwd.set(1)
-fixedpwd_text = ttk.Entry(controlled_center_bottom_frame,width=10, textvariable=fixedpwd, validate='key',
-                     validatecommand=(thentrycheck, '%P'))
-spiderIdtext = tk.StringVar()
-spiderId_text = ttk.Entry(controller_center_center_inside_frame,width=15, textvariable=spiderIdtext, validate='key',
-                     validatecommand=(thentrycheck, '%P'))
-ordertext = tk.StringVar()
-order_text = ttk.Entry(controller_center_center_inside_frame,width=15, textvariable=ordertext, validate='key',
-                     validatecommand=(thentrycheck, '%P'))
-
-BWaccounttext = tk.StringVar()
-BWaccount_text = ttk.Entry(dial_frame,width=15, textvariable=BWaccounttext, validate='key',
-                     validatecommand=(thentrycheck, '%P'))
-BWpwdtext = tk.StringVar()
-BWpwd_text = ttk.Entry(dial_frame,width=15, textvariable=BWpwdtext, validate='key',
-                     validatecommand=(thentrycheck, '%P'))
+controllercenter_lableframe = ttk.LabelFrame(tab1, text="控制中心", width=400, height=280)
+massage_lableframe = ttk.LabelFrame(controllercenter_lableframe, text="短信", width=390, height=300)
+radiobutton1 = ttk.Radiobutton(massage_lableframe, text="讯码", variable=var, value="a", command=radiobuttonDo)
+radiobutton2 = ttk.Radiobutton(massage_lableframe, text="众码", variable=var, value="b", command=radiobuttonDo)
+radiobutton3 = ttk.Radiobutton(massage_lableframe, text="快码", variable=var, value="c", command=radiobuttonDo)
 radiobutton1.grid(row=0, column=0, padx=5)
 radiobutton2.grid(row=0, column=1, padx=5)
 radiobutton3.grid(row=0, column=2, padx=5)
-# radiobutton4.grid(row=0,column=3,padx=5,sticky=tk.E)
+user_name = ttk.Label(massage_lableframe, text="用户名:")
+uname = tk.StringVar()
+uname_text = ttk.Entry(massage_lableframe, textvariable=uname, validate='focusout',
+                       validatecommand=(nameandpwdentrycheck, '%P'))
+password = ttk.Label(massage_lableframe, text="密   码:")
+pwd = tk.StringVar()
+pwd_text = ttk.Entry(massage_lableframe, textvariable=pwd, validatecommand=(nameandpwdentrycheck, '%P'))
+loginbtn = tk.Button(massage_lableframe, text="登录", command=loginbtn)
 user_name.grid(row=1)
 uname_text.grid(row=1, column=1, padx=2, pady=3)
 password.grid(row=2, padx=2, pady=3)
 pwd_text.grid(row=2, column=1, padx=2, pady=3)
+loginbtn.grid(row=5, padx=2, pady=3)
 
-thlabel.grid(row=0, column=2, padx=2, pady=3)
-th_text.grid(row=0, column=3, padx=2, pady=3)
-ctrlabel.grid(row=0, column=0, padx=2, pady=3)
-ctr_text.grid(row=0, column=1, padx=2, pady=3)
+change_ip_lableframe = ttk.LabelFrame(controllercenter_lableframe, text="换IP", width=390, height=300)
+# radiobutton4 = ttk.Radiobutton(massage_lableframe , text="神话", variable=var, value="c", command=radiobuttonDo)
+radiobutton6 = ttk.Radiobutton(change_ip_lableframe, text="讯代理", variable=var, value="e", command=radiobuttonDo)
+radiobutton5 = ttk.Radiobutton(change_ip_lableframe, text="拨号", variable=var, value="d", command=radiobuttonDo)
+high_quality_agent_lableframe = ttk.LabelFrame(change_ip_lableframe, text="优质代理", width=390, height=300)
+spiderIdlab = ttk.Label(high_quality_agent_lableframe, text="spiderId:")
+spiderIdtext = tk.StringVar()
+spiderId_text = ttk.Entry(high_quality_agent_lableframe, width=15, textvariable=spiderIdtext, validate='key',
+                          validatecommand=(thentrycheck, '%P'))
+orderlab = ttk.Label(high_quality_agent_lableframe, text="订单号:")
+ordertext = tk.StringVar()
+order_text = ttk.Entry(high_quality_agent_lableframe, width=15, textvariable=ordertext, validate='key',
+                       validatecommand=(thentrycheck, '%P'))
+use_count_lab = ttk.Label(high_quality_agent_lableframe, text="使用次数:")
+use_count_var = tkinter.StringVar()  # 使用次数
+use_count__text = ttk.Combobox(high_quality_agent_lableframe, width=10, textvariable=use_count_var, validate='key',
+                               validatecommand=(thentrycheck, '%P'))
+use_count__text["values"] = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+testbutton = tk.Button(high_quality_agent_lableframe, text="测试", command=testbtn, width=10)
+# radiobutton7 = ttk.Radiobutton(change_ip_lableframe , text="不换ip", variable=var, value="f", command=radiobuttonDo)
+radiobutton5.grid(row=0, column=1, padx=2, pady=3)
+radiobutton6.grid(row=0, column=0, padx=2, pady=3)
+# radiobutton7.grid(row=0,column=2,padx=2,pady=3)
+spiderIdlab.grid(row=1, column=0, padx=2, pady=3)
+spiderId_text.grid(row=1, column=1, padx=2, pady=3)
+orderlab.grid(row=2, column=0, padx=2, pady=3)
+order_text.grid(row=2, column=1, padx=2, pady=3)
+use_count_lab.grid(row=3, column=0, padx=2, pady=3)
+use_count__text.grid(row=3, column=1, padx=2, pady=3)
+testbutton.grid(row=4, column=0, padx=2, pady=3, sticky=tk.S)
 
-diallabel.grid(row=1,column=2,padx=2,pady=3)
-randomPWDcheck.grid(row=2,column=0,padx=2,pady=3)
-fixedpwdlab.grid(row=2,column=2,padx=5,pady=3)
-fixedpwd_text.grid(row=2,column=3,padx=2,pady=3)
-dial_text.grid(row=1,column=3,padx=2,pady=3)
-Invite_code.grid(row=4, column=0,padx=2, pady=3)
-inv_text.grid(row=4, column=1, padx=2, pady=3)
+dial_lableframe = ttk.LabelFrame(change_ip_lableframe, text="拨号", width=390, height=300)
+BWaccountlabel = ttk.Label(dial_lableframe, text="宽带账号:")
+BW_account_var = tk.StringVar()
+BWaccount_text = ttk.Entry(dial_lableframe, width=15, textvariable=BW_account_var, validate='key',
+                           validatecommand=(thentrycheck, '%P'))
+BWpwdlabel = ttk.Label(dial_lableframe, text="宽带密码:")
+BWpwd_var = tk.StringVar()
+BWpwd_text = ttk.Entry(dial_lableframe, width=15, textvariable=BWpwd_var, validate='key',
+                       validatecommand=(thentrycheck, '%P'))
+filterIPcheckbtn = ttk.Checkbutton(dial_lableframe, text="过滤相同IP")
+dialbutton = tk.Button(dial_lableframe, text="拨号测试", command=dailbtn, width=10)
+BWaccountlabel.grid(row=0, column=0, padx=2, pady=3)
+BWaccount_text.grid(row=0, column=1, padx=2, pady=3)
+BWpwdlabel.grid(row=1, column=0, padx=2, pady=3)
+BWpwd_text.grid(row=1, column=1, padx=2, pady=3)
+filterIPcheckbtn.grid(row=2, column=0, padx=3, pady=3)
+dialbutton.grid(row=3, column=0, padx=2, pady=3)
 
-radiobutton5.grid(row=0,column=1,padx=2,pady=3)
-radiobutton6.grid(row=0,column=0,padx=2,pady=3)
-#radiobutton7.grid(row=0,column=2,padx=2,pady=3)
-spiderIdlab.grid(row=1,column=0,padx=2,pady=3)
-spiderId_text.grid(row=1,column=1,padx=2,pady=3)
-orderlab.grid(row=2,column=0,padx=2,pady=3)
-order_text.grid(row=2,column=1,padx=2,pady=3)
-iplabel.grid(row=3,column=0,padx=2,pady=3)
-ip_comboxlist_text.grid(row=3,column=1,padx=2,pady=3)
-testbutton.grid(row=4,column=0,padx=2,pady=3,sticky=tk.S)
-
-BWaccountlabel.grid(row=0,column=0,padx=2,pady=3)
-BWaccount_text.grid(row=0,column=1,padx=2,pady=3)
-BWpwdlabel.grid(row=1,column=0,padx=2,pady=3)
-BWpwd_text.grid(row=1,column=1,padx=2,pady=3)
-filterIPcheck.grid(row=2,column=0,padx=3,pady=3)
-dialbutton.grid(row=3,column=0,padx=2,pady=3)
-
-loginbtn.grid(row=5, ipadx=20, padx=2, pady=3)
+operater_lableframe = ttk.LabelFrame(controllercenter_lableframe, text="操作区", width=390, height=300)
+operater_count_lab = ttk.Label(operater_lableframe, text="操作数:")
+operater_count_var = tk.IntVar()
+operater_count_var.set(1)
+operater_count_text = ttk.Entry(operater_lableframe, width=10, textvariable=operater_count_var, validate='key',
+                                validatecommand=(thentrycheck, '%P'))
+thread_count_lab = ttk.Label(operater_lableframe, text="线程数:")
+thread_count_var = tk.IntVar()
+thread_count_var.set(1)
+thread_count_text = ttk.Entry(operater_lableframe, width=10, textvariable=thread_count_var, validate='key',
+                              validatecommand=(thentrycheck, '%P'))
+dial_delay_lab = ttk.Label(operater_lableframe, text="拨号延迟:")
+dial_delay_var = tk.IntVar()
+dial_delay_var.set(1)
+dial_delay_text = ttk.Entry(operater_lableframe, width=10, textvariable=dial_delay_var, validate='key',
+                            validatecommand=(thentrycheck, '%P'))
+randomPWDcheck = ttk.Checkbutton(operater_lableframe, text="随机密码")
+fixedpwdlab = ttk.Label(operater_lableframe, text="固定密码:")
+fixedpwd_var = tk.IntVar()
+fixedpwd_var.set(1)
+fixedpwd_text = ttk.Entry(operater_lableframe, width=10, textvariable=fixedpwd_var, validate='key',
+                          validatecommand=(thentrycheck, '%P'))
+Invite_code = ttk.Label(operater_lableframe, text="邀请码:")
+invitation_code_var = tk.StringVar()
+invitation_code_text = ttk.Entry(operater_lableframe, width=10, textvariable=invitation_code_var)
+runbutton = tk.Button(operater_lableframe, text="运行", command=runbtn, width=10)
+stopbutton = tk.Button(operater_lableframe, text="停止", command=stopbtn, width=10)
+clearrunninglogbutton = tk.Button(operater_lableframe, text="清空运行记录", command=clearRunninglogButton, width=10)
+# radiobutton4.grid(row=0,column=3,padx=5,sticky=tk.E)
+operater_count_lab.grid(row=0, column=0, padx=2, pady=3)
+operater_count_text.grid(row=0, column=1, padx=2, pady=3)
+thread_count_lab.grid(row=0, column=2, padx=2, pady=3)
+thread_count_text.grid(row=0, column=3, padx=2, pady=3)
+dial_delay_lab.grid(row=1, column=2, padx=2, pady=3)
+dial_delay_text.grid(row=1, column=3, padx=2, pady=3)
+randomPWDcheck.grid(row=2, column=0, padx=2, pady=3)
+fixedpwdlab.grid(row=2, column=2, padx=5, pady=3)
+fixedpwd_text.grid(row=2, column=3, padx=2, pady=3)
+Invite_code.grid(row=4, column=0, padx=2, pady=3)
+invitation_code_text.grid(row=4, column=1, padx=2, pady=3)
 runbutton.grid(row=6, column=0, padx=5, sticky=tk.S)
-stopbutton.grid(row=6, column=1, padx=5, sticky=tk.S + tk.E)
+stopbutton.grid(row=6, column=1, padx=5, sticky=tk.S )
+clearrunninglogbutton.grid(row=6, column=2, padx=5, sticky=tk.S + tk.E)
+# 所有lableframe放到tab1中
+massage_lableframe.grid(row=0, padx=5, sticky=tk.N + tk.W + tk.E)
+controllercenter_lableframe.grid(row=0, column=1, padx=5, sticky=tk.N)
+runninglog_lableframe.grid(row=0, column=0, padx=5, sticky=tk.N + tk.S)
+operater_lableframe.grid(row=2, padx=5,sticky=tk.W)
+change_ip_lableframe.grid(row=1, padx=5)
+high_quality_agent_lableframe.grid(row=1, column=0)
+dial_lableframe.grid(row=1, column=1)
+
 try:
     with open("account") as fp:
         n, p = fp.read().strip().split(',')
@@ -301,11 +315,11 @@ try:
         pwd.set(p)
 except:
     pass
-#-----------------------------------------------tab3---------------------------------------------------
+# -----------------------------------------------tab3---------------------------------------------------
 # 定义中心列表区域
 
 vbar = tkinter.Scrollbar(tab2)
-tree = ttk.Treeview(tab2, show="headings", height=18, columns=("a", "b", "c", "d", "e"),yscrollcommand=vbar.set)
+tree = ttk.Treeview(tab2, show="headings", height=18, columns=("a", "b", "c", "d", "e"), yscrollcommand=vbar.set)
 # 表格每列的宽度和对齐
 tree.column("a", width=50, anchor="center")
 tree.column("b", width=200, anchor="center")
