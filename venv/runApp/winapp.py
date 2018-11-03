@@ -122,7 +122,7 @@ def creatTh(maxNum):
 def runbtn():
     th = creatTh(thread_count_var.get())
     for t in th:
-        # t.setDaemon(True)
+        t.setDaemon(True)
         t.start()
 
 
@@ -176,7 +176,7 @@ style.configure("BW.TLabel", foreground="#32CD32", background="white")
 var = tk.StringVar()
 
 runninglog_lableframe = ttk.LabelFrame(tab1, text="运行记录", width=400, height=300)
-scr = scrolledtext.ScrolledText(runninglog_lableframe, width=50, height=37)
+scr = scrolledtext.ScrolledText(runninglog_lableframe, width=50, height=36.3)
 currentIpLab=ttk.Label(runninglog_lableframe,text="        当前IP:")
 currentIp_var=tk.StringVar()
 currentIp_text=ttk.Entry(runninglog_lableframe,textvariable=currentIp_var,width=30)
