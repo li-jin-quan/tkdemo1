@@ -1,12 +1,21 @@
-import time
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, Executor
-def sayHello(a):
-    print("say hello:"+a)
-start = time.time()
-with ProcessPoolExecutor(max_workers=2) as pool:
-    results = list(pool.map(sayHello, "1"))
-print
-'results: %s' % results
-end = time.time()
-print
-'Took %.3f seconds.' % (end - start)
+import tkinter
+from tkinter import ttk  # 导入内部包
+
+win = tkinter.Tk()
+tree = ttk.Treeview(win)  # 表格
+tree["columns"] = ("姓名", "年龄", "身高")
+tree.column("姓名", width=100)  # 表示列,不显示
+tree.column("年龄", width=100)
+tree.column("身高", width=100)
+
+tree.heading("姓名", text="姓名-name")  # 显示表头
+tree.heading("年龄", text="年龄-age")
+tree.heading("身高", text="身高-tall")
+
+tree.insert("", 0, text="line1", values=("1", "2", "3"))  # 插入数据，
+tree.insert("", 1, text="line1", values=("1", "2", "3"))
+tree.insert("", 2, text="line1", values=("1", "2", "3"))
+tree.insert("", 3, text="line1", values=("1", "2", "3"))
+
+tree.pack()
+win.mainloop()
