@@ -1,21 +1,38 @@
-import tkinter
-from tkinter import ttk  # 导入内部包
-
-win = tkinter.Tk()
-tree = ttk.Treeview(win)  # 表格
-tree["columns"] = ("姓名", "年龄", "身高")
-tree.column("姓名", width=100)  # 表示列,不显示
-tree.column("年龄", width=100)
-tree.column("身高", width=100)
-
-tree.heading("姓名", text="姓名-name")  # 显示表头
-tree.heading("年龄", text="年龄-age")
-tree.heading("身高", text="身高-tall")
-
-tree.insert("", 0, text="line1", values=("1", "2", "3"))  # 插入数据，
-tree.insert("", 1, text="line1", values=("1", "2", "3"))
-tree.insert("", 2, text="line1", values=("1", "2", "3"))
-tree.insert("", 3, text="line1", values=("1", "2", "3"))
-
-tree.pack()
-win.mainloop()
+from tkinter import *
+import time
+root = Tk()
+root.title("Marquee")
+root.geometry("320x240+100+100")
+show_str = StringVar(root)
+show_str.set("this")
+source_str = "This is a long string."
+stopflag = True
+pos = 0
+def marquee(widget):
+   textwidth = 200
+   strlen = len(source_str)
+   global pos
+   if strlen - pos < textwidth:
+       show_str.set(source_str[pos:pos+textwidth] + source_str[0:textwidth - strlen + pos])
+   else:
+       show_str.set(source_str[pos:pos+textwidth])
+   pos += 1
+   if pos > strlen:
+       pos = 0
+   global stopflag
+   if stopflag:
+       widget.after(100, marquee, widget)
+show_lb = Label(root, textvariable=show_str)
+show_lb.place(x=20, y=20, width=200, height=30)
+def startmarque():
+   global stopflag
+   stopflag = True
+   marquee(show_lb)
+def stopmarquee():
+   global stopflag
+   stopflag = False
+button1 = Button(root, text="start", command=startmarque)
+button2 = Button(root, text="stop", command=stopmarquee)
+button1.place(x=20, y=100, width=50, height=30)
+button2.place(x=200, y=100, width=50, height=30)
+root.mainloop()

@@ -154,13 +154,17 @@ def checkThEntry(content):
             tkinter.messagebox.showwarning("警告", "线程必须是数字!")
             return False
 
-
+def closeWinAsk():
+    askokcancel = tk.messagebox.askokcancel("提示", "关闭窗口将退出工作!")
+    if askokcancel:
+        root.destroy()
 root = tk.Tk()
+root.protocol("WM_DELETE_WINDOW", closeWinAsk)
 root.title("飞蚁")
 root.iconbitmap("bitbug_favicon.ico")
 root.geometry('810x660')  # 是x 不是*
 root.resizable(width=False, height=0)  # 宽不可变, 高不可变,默认为0
-tabControl = ttk.Notebook(root, height=620, padding=0, width=825, style="BW.TLabel")
+tabControl = ttk.Notebook(root, height=620, padding=0, width=825)
 tab1 = ttk.Frame(tabControl)
 tab2 = ttk.Frame(tabControl)
 tab3 = ttk.Frame(tabControl)
@@ -170,21 +174,19 @@ tabControl.add(tab3, text=" 设  置 ")
 tabControl.grid(padx=4, pady=4)
 # -------------------------------------------------------tab1---------------------------------------------------------
 style = ttk.Style()
+style.configure("BW.TLabel", foreground="#556B2F",background="#556B2F")
 thentrycheck = root.register(checkThEntry)
 nameandpwdentrycheck = root.register(checkEntry)
-style.configure("BW.TLabel", foreground="#32CD32", background="white")
-
+#configure = ttk.Style().configure(".", font=("仿宋", 25))
 var = tk.StringVar()
-
 runninglog_lableframe = ttk.LabelFrame(tab1, text="运行记录", width=400, height=300)
-scr = scrolledtext.ScrolledText(runninglog_lableframe, width=50, height=36.3)
-currentIpLab=ttk.Label(runninglog_lableframe,text="        当前IP:")
+scr = scrolledtext.ScrolledText(runninglog_lableframe, width=50, height=36.3,fg="blue")
+currentIpLab=ttk.Label(runninglog_lableframe,text="      当 前 IP:")
 currentIp_var=tk.StringVar()
 currentIp_text=ttk.Entry(runninglog_lableframe,textvariable=currentIp_var,width=30)
 scr.grid(row=0, pady=0)
 currentIpLab.grid(row=1,sticky=tk.S+tk.W)
 currentIp_text.grid(row=1,sticky=tk.S)
-
 
 controllercenter_lableframe = ttk.LabelFrame(tab1, text="控制中心", width=400, height=280)
 massage_lableframe = ttk.LabelFrame(controllercenter_lableframe, text="短信", width=390, height=300)
@@ -200,7 +202,7 @@ uname_text = ttk.Entry(massage_lableframe, textvariable=uname, validate='focusou
                        validatecommand=(nameandpwdentrycheck, '%P'))
 password = ttk.Label(massage_lableframe, text="密   码:")
 pwd = tk.StringVar()
-pwd_text = ttk.Entry(massage_lableframe, textvariable=pwd, validatecommand=(nameandpwdentrycheck, '%P'))
+pwd_text = ttk.Entry(massage_lableframe, textvariable=pwd, validatecommand=(nameandpwdentrycheck, '%P'),show='*')
 loginbtn = tk.Button(massage_lableframe, text="登录", command=loginbtn)
 user_name.grid(row=1)
 uname_text.grid(row=1, column=1, padx=2, pady=3)
@@ -301,14 +303,13 @@ runbutton.grid(row=6, column=0, padx=5, sticky=tk.S)
 stopbutton.grid(row=6, column=1, padx=5, sticky=tk.S )
 clearrunninglogbutton.grid(row=6, column=2, padx=5, sticky=tk.S + tk.E)
 # 所有lableframe放到tab1中
-massage_lableframe.grid(row=0, padx=5, sticky=tk.N + tk.W + tk.E)
-controllercenter_lableframe.grid(row=0, column=1, padx=5, sticky=tk.N)
 runninglog_lableframe.grid(row=0, column=0, padx=5, sticky=tk.N + tk.S)
-operater_lableframe.grid(row=2, padx=5,sticky=tk.W)
+controllercenter_lableframe.grid(row=0, column=1, padx=5, sticky=tk.N)
+massage_lableframe.grid(row=0, padx=5, sticky=tk.N + tk.W + tk.E)
 change_ip_lableframe.grid(row=1, padx=5)
 high_quality_agent_lableframe.grid(row=1, column=0)
 dial_lableframe.grid(row=1, column=1)
-
+operater_lableframe.grid(row=2, padx=5,sticky=tk.W)
 try:
     with open("account") as fp:
         n, p = fp.read().strip().split(',')
@@ -337,4 +338,33 @@ tree.grid(row=0, column=0)
 vbar.grid(row=0, column=1)
 tree.grid()
 
+
+#=======================测试区================
+
+pos=0
+space = " "
+def marquee(widget):
+   global source_str
+   source_str="最新公告:从2019年1月1日起,VIP会员冲100元送100元.   "
+   textwidth = 200
+   strlen = len(source_str)
+   global space
+   global pos
+   if strlen - pos >0:
+       space+="  "
+       widget["text"]=(source_str[pos:pos+textwidth]+space )
+   else:
+       source_str="."+space
+       space=""
+       pos = 0
+       widget["text"] =(source_str)
+   pos += 1
+
+   widget.after(200, marquee, widget)
+style.configure("BW.TLabel",fg="blue")
+testlab=tk.Label(tab1,text="",fg="blue")
+marquee(testlab)
+#testb=ttk.Button(tab1,text="test")
+testlab.grid(row=1,column=0,sticky=tk.S)
+#testb.grid(row=1,column=1,sticky=tk.S)
 root.mainloop()
