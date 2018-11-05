@@ -345,26 +345,27 @@ pos=0
 space = " "
 def marquee(widget):
    global source_str
-   source_str="最新公告:从2019年1月1日起,VIP会员冲100元送100元.   "
-   textwidth = 200
+   source_str="      最新公告:从2019年1月1日起,VIP会员冲100元送100元"
+   testEntry["width"] = 116
    strlen = len(source_str)
-   global space
+   space="                                                                                                                                                                                                      "
    global pos
-   if strlen - pos >0:
-       space+="  "
-       widget["text"]=(source_str[pos:pos+textwidth]+space )
-   else:
-       source_str="."+space
-       space=""
-       pos = 0
-       widget["text"] =(source_str)
+   source_str = space + source_str
+   #208
+   if  pos==250:
+       pos=0
+   testEntry.delete(0,tk.END)
+   testEntry.insert(0, source_str)
+   testEntry.delete(0, pos)
    pos += 1
+   widget.after(100, marquee, widget)
 
-   widget.after(200, marquee, widget)
-style.configure("BW.TLabel",fg="blue")
-testlab=tk.Label(tab1,text="",fg="blue")
-marquee(testlab)
-#testb=ttk.Button(tab1,text="test")
-testlab.grid(row=1,column=0,sticky=tk.S)
-#testb.grid(row=1,column=1,sticky=tk.S)
+testText=tk.Text(tab1,fg="blue",width=65,height=1,font=("仿宋",18))
+testEntry=tk.Entry(tab1,fg="RED")
+#testEntry.insert("end",1.4,"                                                                                                                                                                                                     d")
+#testlab=tk.Label(tab1,text="",bg="red",fg="blue")
+marquee(testEntry)
+#testlab.grid(row=1,column=0,sticky=tk.S)
+testEntry.grid(row=1,column=0,columnspan=2,sticky=tk.S+tk.E)
+#testText.grid(row=1,column=0,columnspan=2,sticky=tk.S+tk.E)
 root.mainloop()
