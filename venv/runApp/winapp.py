@@ -22,6 +22,18 @@ thList = []
 massageToken = None
 
 
+class win(object):
+    def __init__(self):
+        a = 1
+
+    def ttt(self, tab3):
+        ttvar = tk.StringVar()
+        tt = ttk.Label(tab3, text="测试label", textvariable=ttvar)
+        teER = ttk.Entry(tt, width=20)
+        tt.grid()
+        teER.grid()
+
+
 def getCurrentTime():  # 获取系统当前时间
     return datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
 
@@ -54,11 +66,14 @@ def loginbtn():  # tab登录按钮
 
 
 def radiobuttonDo():  # tab1单选按钮
-    urlwork.testSrc(tk.INSERT,scr)
+    #urlwork.testSrc(tk.INSERT, scr)
+    urlwork.testFrame()
 
 
 def clearRunninglogButton():
     scr.delete(1.0, tkinter.END)
+
+
 # 杀死线程
 def stopTh(tid, msg, exctype):
     """raises the exception, performs cleanup if needed"""
@@ -153,6 +168,7 @@ def checkThEntry(content):
             tkinter.messagebox.showwarning("警告", "线程必须是数字!")
             return False
 
+
 def closeRootWinAsk():
     askokcancel = tk.messagebox.askokcancel("提示", "关闭窗口将退出工作!")
     if askokcancel:
@@ -163,14 +179,18 @@ root = tk.Tk()
 root.protocol("WM_DELETE_WINDOW", closeRootWinAsk)
 root.title("飞蚁")
 root.iconbitmap("bitbug_favicon.ico")
+
+
 def center_window(w, h):
     # 获取屏幕 宽、高
     ws = root.winfo_screenwidth()
     hs = root.winfo_screenheight()
     # 计算 x, y 位置
-    x = (ws/2) - (w/2)
-    y = (hs/2) - (h/2)
+    x = (ws / 2) - (w / 2)
+    y = (hs / 2) - (h / 2)
     root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+
+
 center_window(810, 660)
 root.resizable(width=False, height=0)  # 宽不可变, 高不可变,默认为0
 tabControl = ttk.Notebook(root, height=620, padding=0, width=825)
@@ -183,19 +203,19 @@ tabControl.add(tab3, text=" 设  置 ")
 tabControl.grid(padx=4, pady=4)
 # -------------------------------------------------------tab1---------------------------------------------------------
 style = ttk.Style()
-style.configure("BW.TLabel", foreground="#556B2F",background="#556B2F")
+style.configure("BW.TLabel", foreground="#556B2F", background="#556B2F")
 thentrycheck = root.register(checkThEntry)
 nameandpwdentrycheck = root.register(checkEntry)
-#configure = ttk.Style().configure(".", font=("仿宋", 25))
+# configure = ttk.Style().configure(".", font=("仿宋", 25))
 var = tk.StringVar()
 runninglog_lableframe = ttk.LabelFrame(tab1, text="运行记录", width=400, height=300)
-scr = scrolledtext.ScrolledText(runninglog_lableframe, width=50, height=36.3,fg="blue")
-currentIpLab=ttk.Label(runninglog_lableframe,text="      当 前 IP:")
-currentIp_var=tk.StringVar()
-currentIp_text=ttk.Entry(runninglog_lableframe,textvariable=currentIp_var,width=30)
+scr = scrolledtext.ScrolledText(runninglog_lableframe, width=50, height=36.3, fg="blue")
+currentIpLab = ttk.Label(runninglog_lableframe, text="      当 前 IP:")
+currentIp_var = tk.StringVar()
+currentIp_text = ttk.Entry(runninglog_lableframe, textvariable=currentIp_var, width=30)
 scr.grid(row=0, pady=0)
-currentIpLab.grid(row=1,sticky=tk.S+tk.W)
-currentIp_text.grid(row=1,sticky=tk.S)
+currentIpLab.grid(row=1, sticky=tk.S + tk.W)
+currentIp_text.grid(row=1, sticky=tk.S)
 
 controllercenter_lableframe = ttk.LabelFrame(tab1, text="控制中心", width=400, height=280)
 massage_lableframe = ttk.LabelFrame(controllercenter_lableframe, text="短信", width=390, height=300)
@@ -211,7 +231,7 @@ uname_text = ttk.Entry(massage_lableframe, textvariable=uname, validate='focusou
                        validatecommand=(nameandpwdentrycheck, '%P'))
 password = ttk.Label(massage_lableframe, text="密   码:")
 pwd = tk.StringVar()
-pwd_text = ttk.Entry(massage_lableframe, textvariable=pwd, validatecommand=(nameandpwdentrycheck, '%P'),show='*')
+pwd_text = ttk.Entry(massage_lableframe, textvariable=pwd, validatecommand=(nameandpwdentrycheck, '%P'), show='*')
 loginbtn = tk.Button(massage_lableframe, text="登录", command=loginbtn)
 user_name.grid(row=1)
 uname_text.grid(row=1, column=1, padx=2, pady=3)
@@ -309,7 +329,7 @@ fixedpwd_text.grid(row=2, column=3, padx=2, pady=3)
 Invite_code.grid(row=4, column=0, padx=2, pady=3)
 invitation_code_text.grid(row=4, column=1, padx=2, pady=3)
 runbutton.grid(row=6, column=0, padx=5, sticky=tk.S)
-stopbutton.grid(row=6, column=1, padx=5, sticky=tk.S )
+stopbutton.grid(row=6, column=1, padx=5, sticky=tk.S)
 clearrunninglogbutton.grid(row=6, column=2, padx=5, sticky=tk.S + tk.E)
 # 所有lableframe放到tab1中
 runninglog_lableframe.grid(row=0, column=0, padx=5, sticky=tk.N + tk.S)
@@ -318,7 +338,7 @@ massage_lableframe.grid(row=0, padx=5, sticky=tk.N + tk.W + tk.E)
 change_ip_lableframe.grid(row=1, padx=5)
 high_quality_agent_lableframe.grid(row=1, column=0)
 dial_lableframe.grid(row=1, column=1)
-operater_lableframe.grid(row=2, padx=5,sticky=tk.W)
+operater_lableframe.grid(row=2, padx=5, sticky=tk.W)
 try:
     with open("account") as fp:
         n, p = fp.read().strip().split(',')
@@ -326,7 +346,7 @@ try:
         pwd.set(p)
 except:
     pass
-# -----------------------------------------------tab3---------------------------------------------------
+# -----------------------------------------------tab2---------------------------------------------------
 # 定义中心列表区域
 
 vbar = tkinter.Scrollbar(tab2)
@@ -347,33 +367,45 @@ tree.grid(row=0, column=0)
 vbar.grid(row=0, column=1)
 tree.grid()
 
-#=======================测试区(流动文字)================
-pos=0
+# =======================测试区(流动文字)================
+pos = 0
+
+
 def marquee(widget):
-   global source_str
-   source_str="最新公告:从2019年1月1日起,VIP会员冲100元送100元"
-   testEntry["width"] = 116
-   strlen = len(source_str)
-   space="                                    " \
-         "                                                                                                                                                                    "
-   global pos
-   source_str = space + source_str
-   #208
-   if  pos==len(source_str)+5:
-       pos=0
-   testEntry.delete(0,tk.END)
-   testEntry.insert(0, source_str)
-   testEntry.delete(0, pos)
-   pos += 1
-   print("==============>",len(space))
-   if((len(source_str)-pos)-strlen<0):
-       widget.after(200,marquee,widget)
-   else:
-       widget.after(100, marquee, widget)
+    global source_str
+    source_str = "最新公告:从2019年1月1日起,VIP会员冲100元送100元"
+    testEntry["width"] = 116
+    strlen = len(source_str)
+    space = "                                    " \
+            "                                                                                                                                                                    "
+    global pos
+    source_str = space + source_str
+    # 208
+    if pos == len(source_str) + 5:
+        pos = 0
+    testEntry.delete(0, tk.END)
+    testEntry.insert(0, source_str)
+    testEntry.delete(0, pos)
+    pos += 1
+    # print("==============>",len(space))
+    if ((len(source_str) - pos) - strlen < 0):
+        widget.after(200, marquee, widget)
+    else:
+        widget.after(100, marquee, widget)
 
-testEntry=tk.Entry(tab1,fg="RED")
+
+testEntry = tk.Entry(tab1, fg="RED")
 marquee(testEntry)
-testEntry.grid(row=1,column=0,columnspan=2,sticky=tk.S+tk.E)
+testEntry.grid(row=1, column=0, columnspan=2, sticky=tk.S + tk.E)
 
 
+# -----------------------测试二区-------------------------------------
+def t():
+    w = win()
+    w.ttt(tab3)
+
+
+t()
+
+urlwork.testSrc(ordertext)
 root.mainloop()

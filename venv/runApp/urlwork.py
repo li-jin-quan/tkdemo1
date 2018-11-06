@@ -1,11 +1,11 @@
 import urllib.parse
 import urllib.request
-
 baseUrl="http://47.106.71.60:9180/service.asmx/"
+
 class MyUrl(object):
     def __init__(self):
         self.url = ""
-
+        self.frame=None
     # 执行请求
     def getResponse(self, url, data):
         params = urllib.parse.urlencode(data)
@@ -59,5 +59,9 @@ class MyUrl(object):
         }
         return self.getResponse(url, data)
 
-    def testSrc(self,Insert,src):
-        src.insert(Insert,"textosdijfoaijsdfijo")
+    def testSrc(self,frame):
+        self.frame=frame
+        pass
+        #src.insert(Insert,"textosdijfoaijsdfijo")
+    def testFrame(self):
+        print("============>"+self.frame.get())
