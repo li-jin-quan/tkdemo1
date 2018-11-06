@@ -58,3 +58,6 @@ class MyUrl(object):
             "hm":num
         }
         return self.getResponse(url, data)
+
+    def testSrc(self,Insert,src):
+        src.insert(Insert,"textosdijfoaijsdfijo")

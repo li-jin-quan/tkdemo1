@@ -54,9 +54,8 @@ def loginbtn():  # tab登录按钮
 
 
 def radiobuttonDo():  # tab1单选按钮
-    insertScr("你点击了radiobutton " + var.get())
-    if (var.get() == "d"):
-        scr.delete(1.0, tkinter.END)
+    urlwork.testSrc(tk.INSERT,scr)
+
 
 def clearRunninglogButton():
     scr.delete(1.0, tkinter.END)
@@ -154,15 +153,25 @@ def checkThEntry(content):
             tkinter.messagebox.showwarning("警告", "线程必须是数字!")
             return False
 
-def closeWinAsk():
+def closeRootWinAsk():
     askokcancel = tk.messagebox.askokcancel("提示", "关闭窗口将退出工作!")
     if askokcancel:
         root.destroy()
+
+
 root = tk.Tk()
-root.protocol("WM_DELETE_WINDOW", closeWinAsk)
+root.protocol("WM_DELETE_WINDOW", closeRootWinAsk)
 root.title("飞蚁")
 root.iconbitmap("bitbug_favicon.ico")
-root.geometry('810x660')  # 是x 不是*
+def center_window(w, h):
+    # 获取屏幕 宽、高
+    ws = root.winfo_screenwidth()
+    hs = root.winfo_screenheight()
+    # 计算 x, y 位置
+    x = (ws/2) - (w/2)
+    y = (hs/2) - (h/2)
+    root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+center_window(810, 660)
 root.resizable(width=False, height=0)  # 宽不可变, 高不可变,默认为0
 tabControl = ttk.Notebook(root, height=620, padding=0, width=825)
 tab1 = ttk.Frame(tabControl)
@@ -338,34 +347,33 @@ tree.grid(row=0, column=0)
 vbar.grid(row=0, column=1)
 tree.grid()
 
-
-#=======================测试区================
-
+#=======================测试区(流动文字)================
 pos=0
-space = " "
 def marquee(widget):
    global source_str
-   source_str="      最新公告:从2019年1月1日起,VIP会员冲100元送100元"
+   source_str="最新公告:从2019年1月1日起,VIP会员冲100元送100元"
    testEntry["width"] = 116
    strlen = len(source_str)
-   space="                                                                                                                                                                                                      "
+   space="                                    " \
+         "                                                                                                                                                                    "
    global pos
    source_str = space + source_str
    #208
-   if  pos==250:
+   if  pos==len(source_str)+5:
        pos=0
    testEntry.delete(0,tk.END)
    testEntry.insert(0, source_str)
    testEntry.delete(0, pos)
    pos += 1
-   widget.after(100, marquee, widget)
+   print("==============>",len(space))
+   if((len(source_str)-pos)-strlen<0):
+       widget.after(200,marquee,widget)
+   else:
+       widget.after(100, marquee, widget)
 
-testText=tk.Text(tab1,fg="blue",width=65,height=1,font=("仿宋",18))
 testEntry=tk.Entry(tab1,fg="RED")
-#testEntry.insert("end",1.4,"                                                                                                                                                                                                     d")
-#testlab=tk.Label(tab1,text="",bg="red",fg="blue")
 marquee(testEntry)
-#testlab.grid(row=1,column=0,sticky=tk.S)
 testEntry.grid(row=1,column=0,columnspan=2,sticky=tk.S+tk.E)
-#testText.grid(row=1,column=0,columnspan=2,sticky=tk.S+tk.E)
+
+
 root.mainloop()

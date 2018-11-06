@@ -5,7 +5,7 @@ root.title("Marquee")
 root.geometry("320x240+100+100")
 show_str = StringVar(root)
 show_str.set("this")
-source_str = "This is a long string."
+source_str = "测试数据:这里是流动文字测试,颜色(红)"
 stopflag = True
 pos = 0
 def marquee(widget):
@@ -22,7 +22,7 @@ def marquee(widget):
    global stopflag
    if stopflag:
        widget.after(100, marquee, widget)
-show_lb = Label(root, textvariable=show_str)
+show_lb = Label(root,anchor=W ,textvariable=show_str)
 show_lb.place(x=20, y=20, width=200, height=30)
 def startmarque():
    global stopflag
