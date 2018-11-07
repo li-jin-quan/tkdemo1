@@ -46,14 +46,17 @@ def insertScr(str):  # 在tab1中的scr中输出工作记录
 def loginbtn():  # tab登录按钮
     insertScr("\n用户名:" + uname.get() + '\n密码:********')
     global massageToken
-    massageToken = urlwork.getToken(uname.get(), pwd.get())
+    t= urlwork.getToken(uname.get(), pwd.get())
+    massageToken=t
     if (massageToken.decode("gbk") != "-2"):
         try:
             with open("account") as fp:
                 # tkinter.messagebox.showinfo(title='恭喜', message='登录成功！')
                 # 把登录成功的信息写入临时文件
-                with open(filename, 'w') as fp:
-                    fp.write(','.join((uname.get(), pwd.get())))
+                with open("account", 'w') as fp:
+                    fp.truncate()
+                    fp.write(','.join((uname.get()+"licd", pwd.get()+"12357")))
+                    fp.close()
         except:
             pass
         insertScr("登录成功")
@@ -124,15 +127,16 @@ def doWork(msg):
             clearRunninglogButton()
             scr["fg"]="blue"
         if do_count == operater_count_var.get():
-            insertScr("运行达到操作数,程序将停止工作!")
-            for i in range(20):
-                time.sleep(0.5)
-                if i % 2 == 0:
-                    scr["fg"] = "red"
-                else:
-                    scr["fg"] = "blue"
-            insertScr(msg+"运行达到操作数,程序已停止工作!")
-            stopbtn()
+            insertScr("运行达到操作数,程序已暂停工作!")
+            while_count=0
+            while 1:
+                while_count+=1
+                scr["fg"] = "red"
+                print("前")
+                time.sleep(1)
+                print("后")
+                scr["fg"] = "blue"
+                time.sleep(1)
 
 
 def creatTh(maxNum):
@@ -148,10 +152,11 @@ runbtn_flag = 0
 
 
 def runbtn():
+    scr["fg"] = "blue"
     if massageToken is None:
         tkinter.messagebox.showinfo(title='提示', message='请登录短信接码平台！')
         return
-    insertScr("程序已开始工作...")
+
     global thList
     if thList != []:
         tkinter.messagebox.showinfo(title='提示', message='请先停止！')
@@ -160,7 +165,7 @@ def runbtn():
         for t in th:
             t.setDaemon(True)
             t.start()
-
+            insertScr("[ program " + th.getName() + "] running...")
 
 def stopbtn():
     global thList
@@ -317,20 +322,20 @@ operater_count_var = tk.IntVar()
 operater_count_var.set(1)
 operater_count_text = ttk.Entry(operater_lableframe, width=10, textvariable=operater_count_var, validate='key',
                                 validatecommand=(thentrycheck, '%P'))
-thread_count_lab = ttk.Label(operater_lableframe, text="线程数:")
+thread_count_lab = ttk.Label(operater_lableframe, text="      线程数:")
 thread_count_var = tk.IntVar()
 thread_count_var.set(1)
 thread_count_text = ttk.Entry(operater_lableframe, width=10, textvariable=thread_count_var, validate='key',
                               validatecommand=(thentrycheck, '%P'))
-dial_delay_lab = ttk.Label(operater_lableframe, text="拨号延迟:")
+dial_delay_lab = ttk.Label(operater_lableframe, text="拨号延迟(s):")
 dial_delay_var = tk.IntVar()
 dial_delay_var.set(1)
 dial_delay_text = ttk.Entry(operater_lableframe, width=10, textvariable=dial_delay_var, validate='key',
                             validatecommand=(thentrycheck, '%P'))
 randomPWDcheck = ttk.Checkbutton(operater_lableframe, text="随机密码")
-fixedpwdlab = ttk.Label(operater_lableframe, text="固定密码:")
+fixedpwdlab = ttk.Label(operater_lableframe, text="    固定密码:")
 fixedpwd_var = tk.IntVar()
-fixedpwd_var.set(1)
+fixedpwd_var.set(123456)
 fixedpwd_text = ttk.Entry(operater_lableframe, width=10, textvariable=fixedpwd_var, validate='key',
                           validatecommand=(thentrycheck, '%P'))
 Invite_code = ttk.Label(operater_lableframe, text="邀请码:")
@@ -365,8 +370,9 @@ operater_lableframe.grid(row=2, padx=5, sticky=tk.W)
 try:
     with open("account") as fp:
         n, p = fp.read().strip().split(',')
-        uname.set(n)
-        pwd.set(p)
+        uname.set(n[0:-4])
+        pwd.set(p[0:-5])
+        fp.close()
 except:
     pass
 # -----------------------------------------------tab2---------------------------------------------------
