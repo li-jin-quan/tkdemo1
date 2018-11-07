@@ -59,6 +59,10 @@ class MyUrl(object):
         }
         return self.getResponse(url, data)
 
+
+    def getOutIp(self):
+        return urllib.request.urlopen('http://ip.42.pl/raw').read().decode()
+
     def testSrc(self,frame):
         self.frame=frame
         pass

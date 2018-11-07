@@ -44,7 +44,7 @@ def insertScr(str):  # 在tab1中的scr中输出工作记录
 
 
 def loginbtn():  # tab登录按钮
-    insertScr("\n用户名:" + uname.get() + '\n密码:' + pwd.get())
+    insertScr("\n用户名:" + uname.get() + '\n密码:********')
     global massageToken
     massageToken = urlwork.getToken(uname.get(), pwd.get())
     if (massageToken.decode("gbk") != "-2"):
@@ -66,7 +66,7 @@ def loginbtn():  # tab登录按钮
 
 
 def radiobuttonDo():  # tab1单选按钮
-    #urlwork.testSrc(tk.INSERT, scr)
+    # urlwork.testSrc(tk.INSERT, scr)
     urlwork.testFrame()
 
 
@@ -92,18 +92,12 @@ def stopTh(tid, msg, exctype):
 
 
 def doWork(msg):
-    insertScr(msg + "is running...")
-
-    while 3:
+    do_count = 0
+    while 1:
         # 1.获取token    if (loginbtn):
-        if massageToken is None:
-            tkinter.messagebox.showinfo(title='提示', message='请登录短信接码平台！')
-            break
-        else:
-            logintoken = massageToken
-            currentIp_var.set("192.168.0.0")
+        logintoken = massageToken
+        currentIp_var.set(urlwork.getOutIp())
         # 2.获取手机号
-
         telNumber = urlwork.getTelNum(logintoken)
         insertScr(msg + "手机号:" + telNumber[3:13].decode("gbk"))
         # 3.获取验证码
@@ -123,6 +117,22 @@ def doWork(msg):
         else:
             insertScr(msg + "号码释放失败")
         tree.insert("", "end", values=(i + 1, telNumber[3:13], "123456789", "OK", "-"))
+        do_count += 1
+        if do_count == 20:
+            insertScr("清除运行日志...")
+            scr["fg"] = "#00FA9A"
+            clearRunninglogButton()
+            scr["fg"]="blue"
+        if do_count == operater_count_var.get():
+            insertScr("运行达到操作数,程序将停止工作!")
+            for i in range(20):
+                time.sleep(0.5)
+                if i % 2 == 0:
+                    scr["fg"] = "red"
+                else:
+                    scr["fg"] = "blue"
+            insertScr(msg+"运行达到操作数,程序已停止工作!")
+            stopbtn()
 
 
 def creatTh(maxNum):
@@ -134,16 +144,29 @@ def creatTh(maxNum):
     return thList
 
 
+runbtn_flag = 0
+
+
 def runbtn():
-    th = creatTh(thread_count_var.get())
-    for t in th:
-        t.setDaemon(True)
-        t.start()
+    if massageToken is None:
+        tkinter.messagebox.showinfo(title='提示', message='请登录短信接码平台！')
+        return
+    insertScr("程序已开始工作...")
+    global thList
+    if thList != []:
+        tkinter.messagebox.showinfo(title='提示', message='请先停止！')
+    else:
+        th = creatTh(thread_count_var.get())
+        for t in th:
+            t.setDaemon(True)
+            t.start()
 
 
 def stopbtn():
+    global thList
     for th in thList:
         stopTh(th.ident, "[程序" + th.getName() + "]", SystemExit)
+    thList = []
 
 
 def testbtn():
@@ -373,7 +396,7 @@ pos = 0
 
 def marquee(widget):
     global source_str
-    source_str = "最新公告:从2019年1月1日起,VIP会员冲100元送100元"
+    source_str = "[最新公告]:从2019年1月1日起,VIP会员充100元送100元"
     testEntry["width"] = 116
     strlen = len(source_str)
     space = "                                    " \
@@ -394,7 +417,7 @@ def marquee(widget):
         widget.after(100, marquee, widget)
 
 
-testEntry = tk.Entry(tab1, fg="RED")
+testEntry = tk.Entry(tab1, fg="#4682B4")
 marquee(testEntry)
 testEntry.grid(row=1, column=0, columnspan=2, sticky=tk.S + tk.E)
 
